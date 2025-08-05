@@ -57,8 +57,9 @@ class ConfigViews():
 
 
 class DataViewList():
-	search_fields = ['id_socio', 
-				  	 'nombre_socio'
+	search_fields = ['cuenta_socio', 
+				  	'nombre_socio',
+					'id_sucursal__nombre_sucursal'
 	]
 	
 	ordering = ['nombre_socio']
@@ -69,7 +70,7 @@ class DataViewList():
 		'estatus_socio': (1, 'Estatus'),
 		'id_socio': (1, 'ID'),
 		'cuenta_socio': (1, 'Cuenta Socio'),
-		'sucursal_socio': (1, 'Sucursal Socio'),
+		'id_sucursal': (1, 'Sucursal Socio'),
 		'nombre_socio': (4, 'Nombre Socio'),
 		'acciones': (2, 'Acciones'),
 	}
@@ -78,7 +79,7 @@ class DataViewList():
 		{'field_name': 'estatus_socio', 'date_format': None},
 		{'field_name': 'id_socio', 'date_format': None},
 		{'field_name': 'cuenta_socio', 'date_format': None},
-		{'field_name': 'sucursal_socio', 'date_format': None},
+		{'field_name': 'id_sucursal', 'date_format': None},
 		{'field_name': 'nombre_socio', 'date_format': None},
 	]
 

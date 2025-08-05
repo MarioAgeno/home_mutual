@@ -27,7 +27,8 @@ estructura_campos = {
 	'socio': {
 		'Información Cuenta Socio': {
 			'fila_1': [
-				{'field_name': 'estatus_sucursal', 'columna': 2, 'design': None},
+				{'field_name': 'estatus_socio', 'columna': 2, 'design': None},
+				{'field_name': 'tipo_cuenta', 'columna': 2, 'design': None},
 				{'field_name': 'cuenta_socio', 'columna': 2, 'design': None},
 				{'field_name': 'id_sucursal', 'columna': 4, 'design': None},
 			],

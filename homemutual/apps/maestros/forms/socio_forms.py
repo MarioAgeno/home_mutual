@@ -30,6 +30,11 @@ class SocioForm(CrudGenericForm):
 		}
 	
 	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+'''
+
+	def __init__(self, *args, **kwargs):
 		self.user = kwargs.pop('user', None)  # Extraer el usuario autenticado
 		super().__init__(*args, **kwargs)
 		
@@ -53,3 +58,4 @@ class SocioForm(CrudGenericForm):
 			#-- Remover id_sucursal de la validación en modo edición.
 			self._errors.pop('id_sucursal', None)
 		return cleaned_data
+'''
