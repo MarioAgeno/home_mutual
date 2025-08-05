@@ -1,0 +1,42 @@
+{% extends 'home.html' %}
+{% load custom_filters %}
+
+{% block title %}
+    Saldos en Caja de Ahorro
+{% endblock title %}
+
+{% block principalcomponent %}
+
+<div class="container mt-4">
+    <h1 class="mt-5">Saldos en Caja de Ahorro</h1>
+    <hr>
+
+    {% if datos.error %}
+        <div class="alert alert-danger">
+            Error: {{ datos.error }}
+        </div>
+    {% else %}
+        <div class="row mt-3">
+            {% for item in datos %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-primary shadow-lg">
+                        <div class="card-header bg-primary text-white">
+                            Cuenta {{ item.Cuenta }}
+                        </div>
+                        <div class="card-body bg-light">
+                            <h5 class="card-title">{{ item.Nombre }}</h5>
+                            <p class="card-text">
+                                <strong>Saldo:</strong> 
+                                <span class="text-success" style="font-size: 1.8rem; font-weight: bold;">
+                                    ${{ item.Saldo|formato_miles }}
+                                </span><br>
+                                <strong>Cuenta WEB:</strong> {{ item.Cuenta_WEB }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock principalcomponent %}
