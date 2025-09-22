@@ -3,7 +3,7 @@ from django import forms
 from datetime import time
 
 from .crud_forms_generics import CrudGenericForm
-from ..models.valida_models import Valida
+from models.valida_models import Valida
 from diseno_base.diseno_bootstrap import (
 	formclasstext, formclassselect, formclassdate)
 
@@ -26,10 +26,6 @@ class ValidaForm(CrudGenericForm):
 		self.fields['hora_valida'].input_formats = ['%H:%M']
 		self.fields['hs'].input_formats = ['%H:%M']
 		
-  	# Añadir clases a campos relevantes
-		# for field in ['solicitado', 'comentario', 'compro', 'validacion']:
-		# 	if field in self.fields:
-		# 		self.fields[field].widget.attrs.update({'class': formclasstext})
 
 	def clean_hora_valida(self):
 		hora_valida = self.cleaned_data.get('hora_valida')

@@ -33,7 +33,6 @@ class RegistroUsuarioForm(UserCreationForm):
 			'telefono',
 			'is_active',
 			'is_staff',
-			'id_sucursal',
 			'password1',
 			'password2',
 		]
@@ -53,8 +52,6 @@ class RegistroUsuarioForm(UserCreationForm):
 				forms.CheckboxInput(attrs={**formclasscheck}),
 			'is_staff': 
 				forms.CheckboxInput(attrs={**formclasscheck}),
-			'id_sucursal': 
-				forms.Select(attrs={**formclassselect}),
 		}
 
 class EditarUsuarioForm(UserChangeForm):
@@ -69,7 +66,6 @@ class EditarUsuarioForm(UserChangeForm):
 			'telefono',
 			'is_active',
 			'is_staff',
-			'id_sucursal',
 		]
 		
 		widgets = {
@@ -87,8 +83,6 @@ class EditarUsuarioForm(UserChangeForm):
 				forms.CheckboxInput(attrs={**formclasscheck}),
 			'is_staff': 
 				forms.CheckboxInput(attrs={**formclasscheck}),
-			'id_sucursal': 
-				forms.Select(attrs={**formclassselect}),
 		}
 
 class GroupForm(forms.ModelForm):

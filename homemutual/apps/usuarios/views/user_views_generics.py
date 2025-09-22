@@ -2,6 +2,7 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.db.models import Q
+from apps.core.mixins import StaffRequiredMixin
 
 
 #-- Vistas Genéricas Basada en Clases 
@@ -12,7 +13,7 @@ class GenericLoginView(LoginView):
 class GenericLogoutView(LogoutView):
 	pass
 
-class GenericListView(ListView):
+class GenericListView(StaffRequiredMixin, ListView):
 	cadena_filtro = ""
 	
 	def get_queryset(self):
@@ -27,15 +28,15 @@ class GenericListView(ListView):
 		context["buscar"] = self.request.GET.get('buscar', '')
 		return context
 
-class GenericCreateView(CreateView):
+class GenericCreateView(StaffRequiredMixin, CreateView):
 	pass
 
-class GenericUpdateView(UpdateView):
+class GenericUpdateView(StaffRequiredMixin, UpdateView):
 	#-- Nombre del argumento de clave primaria pasado en el url. Por defecto es pk.
 	#pk_url_kwarg = "id"
 	pass
 
-class GenericDeleteView(DeleteView):
+class GenericDeleteView(StaffRequiredMixin, DeleteView):
 	#-- Nombre del argumento de clave primaria pasado en el url. Por defecto es pk.
 	#pk_url_kwarg = "id"
 	pass

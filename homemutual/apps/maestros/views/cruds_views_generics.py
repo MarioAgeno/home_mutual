@@ -2,6 +2,7 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.db.models import Q
 from django.http import JsonResponse
+from django.db.models import OneToOneField
 from django.db import transaction
 from django.db.models import ProtectedError
 
@@ -114,20 +115,33 @@ class MaestroCreateView(PermissionRequiredMixin, CreateView):
 		user = self.request.user
 		
 		#-- Asigna el usuario directamente en el modelo.
-		form.instance.id_user = user
-		form.instance.usuario = user.username
-		
+		# form.instance.id_user = user
+		# form.instance.usuario = user.username
+
+        # Si querés loguear el operador:
+		if hasattr(form.instance, 'usuario'):
+			form.instance.usuario = user.username
+
+        # Si el modelo tiene id_user y viene vacío en el form, podés completar con el request.user
+        # (útil para modelos "propiedad-del-usuario"). Pero no lo hagas para CuentaMutual.
 		try:
-			#-- Manejo de transacciones.
+			fld = self.model._meta.get_field('id_user')
+            # Si el form NO envió id_user (o viene None), recién ahí usar el request.user.
+			if form.cleaned_data.get('id_user') in (None, ''):
+                # Sólo para modelos que realmente deben apuntar al operador actual.
+                # Para CuentaMutual NO corresponde.
+				pass
+		except Exception:
+			pass
+
+		from django.db import transaction
+		try:
 			with transaction.atomic():
 				return super().form_valid(form)
-		
 		except Exception as e:
-			#-- Captura el error de transacción.
-			context = self.get_context_data(form)
-			context['data_has_erors'] = True
-			context['transaction_error'] = str(e)
-			return self.render_to_response(context)
+			from django.contrib import messages
+			messages.error(self.request, f"Error de transacción: {e}")
+			return super().form_invalid(form)
 	
 	def form_invalid(self, form):
 		"""

@@ -1,17 +1,16 @@
-# homemutual\apps\maestros\views\socio_views.py
+# homemutual\apps\maestros\views\cuenta_mutual_views.py
 from django.urls import reverse_lazy
 from .cruds_views_generics import *
-from ..models.socio_models import Socio
-from ..forms.socio_forms import SocioForm
-from django.utils import timezone
-
+from ..models.cuenta_mutual_models import CuentaMutual
+from ..forms.cuenta_mutual_forms import CuentaMutualForm
+from apps.core.mixins import StaffRequiredMixin
 
 class ConfigViews():
 	# Modelo
-	model = Socio
+	model = CuentaMutual
 	
 	# Formulario asociado al modelo
-	form_class = SocioForm
+	form_class = CuentaMutualForm
 	
 	# Aplicación asociada al modelo
 	app_label = model._meta.app_label
@@ -21,10 +20,10 @@ class ConfigViews():
 	# master_title = model._meta.verbose_name_plural
 	
 	#-- Usar esta forma cuando el modelo esté compuesto de una sola palabra: Ej. Color.
-	model_string = model.__name__.lower()  #-- Usar esta forma cuando el modelo esté compuesto de una sola palabra: Ej. Color.
+	# model_string = model.__name__.lower()  #-- Usar esta forma cuando el modelo esté compuesto de una sola palabra: Ej. Color.
 	
 	#-- Usar esta forma cuando el modelo esté compuesto por más de una palabra: Ej. TipoCambio colocar "tipo_cambio".
-	#model_string = "tipo_cambio"
+	model_string = "cuenta_mutual"
 	
 	# Permisos
 	permission_add = f"{app_label}.add_{model.__name__.lower()}"
@@ -57,35 +56,32 @@ class ConfigViews():
 
 
 class DataViewList():
-	search_fields = ['cuenta_socio', 
-				  	'nombre_socio',
-					'id_sucursal__nombre_sucursal'
-	]
-	
-	ordering = ['nombre_socio']
+	search_fields = ['id_socio', 'id_user__username', 'id_user__last_name', 'id_user__first_name']
+
+	ordering = ['id_socio']
 	
 	paginate_by = 8
 	  
 	table_headers = {
-		'estatus_socio': (1, 'Estatus'),
-		'id_socio': (1, 'ID'),
-		'cuenta_socio': (1, 'Cuenta Socio'),
-		'id_sucursal': (1, 'Sucursal Socio'),
-		'nombre_socio': (4, 'Nombre Socio'),
-		'acciones': (2, 'Acciones'),
+		'estatus_cuenta_mutual': (1, 'Estatus'),
+		'id_user': (1, 'Usuario'),
+		'id_socio': (1, 'ID Socio'),
+		'usuario_nombre': (1, 'Apellido'),
+		'id_sucursal': (1, 'Sucursal'),
+		'acciones': (1, 'Acciones'),
 	}
 	
 	table_data = [
-		{'field_name': 'estatus_socio', 'date_format': None},
+		{'field_name': 'estatus_cuenta_mutual', 'date_format': None},
+		{'field_name': 'id_user', 'date_format': None},
 		{'field_name': 'id_socio', 'date_format': None},
-		{'field_name': 'cuenta_socio', 'date_format': None},
+		{'field_name': 'usuario_nombre', 'date_format': None},
 		{'field_name': 'id_sucursal', 'date_format': None},
-		{'field_name': 'nombre_socio', 'date_format': None},
 	]
 
 
-# SocioListView - Inicio
-class SocioListView(MaestroListView):
+# CuentaMutualListView - Inicio
+class CuentaMutualListView(StaffRequiredMixin, MaestroListView):
 	model = ConfigViews.model
 	template_name = ConfigViews.template_list
 	context_object_name = ConfigViews.context_object_name
@@ -105,8 +101,8 @@ class SocioListView(MaestroListView):
 	}
 
 
-# SocioCreateView - Inicio
-class SocioCreateView(MaestroCreateView):
+# CuentaMutualCreateView - Inicio
+class CuentaMutualCreateView(StaffRequiredMixin, MaestroCreateView):
 	model = ConfigViews.model
 	list_view_name = ConfigViews.list_view_name
 	form_class = ConfigViews.form_class
@@ -121,15 +117,14 @@ class SocioCreateView(MaestroCreateView):
 	# 	"list_view_name" : ConfigViews.list_view_name
 	# }
 	
-	def get_initial(self):
-		initial = super().get_initial()
-		#-- Asignar la sucursal del usuario autenticado como valor inicial.
-		initial['id_sucursal'] = self.request.user.id_sucursal
-		return initial
+	#def get_initial(self):
+	#	initial = super().get_initial()
+	#	#-- Asignar la sucursal del usuario autenticado como valor inicial.
+	#	initial['id_sucursal'] = self.request.user.id_sucursal
+	#	return initial
 
-
-# SocioUpdateView
-class SocioUpdateView(MaestroUpdateView):
+# CuentaMutualUpdateView
+class CuentaMutualUpdateView(StaffRequiredMixin, MaestroUpdateView):
 	model = ConfigViews.model
 	list_view_name = ConfigViews.list_view_name
 	form_class = ConfigViews.form_class
@@ -156,8 +151,8 @@ class SocioUpdateView(MaestroUpdateView):
 	# 	return context
 
 
-# SocioDeleteView
-class SocioDeleteView (MaestroDeleteView):
+# CuentaMutualDeleteView
+class CuentaMutualDeleteView (StaffRequiredMixin, MaestroDeleteView):
 	model = ConfigViews.model
 	list_view_name = ConfigViews.list_view_name
 	template_name = ConfigViews.template_delete

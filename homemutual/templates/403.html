@@ -1,0 +1,92 @@
+{# templates/403.html #}
+{% extends "base.html" %}
+
+{% block title %}Permiso denegado (403){% endblock title %}
+
+{# Si tenés un header/topbar, incluilo acá #}
+{% block header %}
+  {% include "partials/topnav.html" ignore missing %}
+{% endblock header %}
+
+{% block main %}
+  {# base.html ya tiene <div id="layoutSidenav"> abierto #}
+
+  {% block sidebar %}
+    <div id="layoutSidenav_nav">
+      {% include "partials/sidebar.html" %}
+    </div>
+  {% endblock sidebar %}
+
+  {% block maincomponent %}
+    <div id="layoutSidenav_content">
+      <main>
+        <div class="container-fluid px-4">
+          <ol class="breadcrumb my-3">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+            <li class="breadcrumb-item active">Permiso denegado</li>
+          </ol>
+
+          <div class="row">
+            <div class="col-12 col-lg-10 col-xl-8 mx-auto">
+              <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="me-3 display-6 text-danger">
+                      <i class="fas fa-ban"></i>
+                    </div>
+                    <div>
+                      <h1 class="h3 mb-1">Permiso denegado (403)</h1>
+                      <p class="text-muted mb-0">
+                        No tenés acceso a esta sección o la acción no está permitida para tu usuario.
+                      </p>
+                    </div>
+                  </div>
+
+                  <hr class="my-4"/>
+
+                  <p class="mb-2">
+                    <strong>Ruta:</strong> <code>{{ request.path }}</code>
+                  </p>
+                  {% if request.user.is_authenticated %}
+                    <p class="mb-0">
+                      <strong>Usuario:</strong>
+                      {{ request.user.get_full_name|default:request.user.username }}
+                      {% if request.user.is_staff %}
+                        <span class="badge bg-info ms-2">staff</span>
+                      {% else %}
+                        <span class="badge bg-secondary ms-2">socio</span>
+                      {% endif %}
+                    </p>
+                  {% endif %}
+
+                  <div class="d-flex flex-wrap gap-2 mt-4">
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                      <i class="fas fa-home me-2"></i> Volver al inicio
+                    </a>
+                    {% if request.META.HTTP_REFERER %}
+                    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-outline-secondary">
+                      <i class="fas fa-arrow-left me-2"></i> Volver atrás
+                    </a>
+                    {% endif %}
+                  </div>
+
+                  <div class="alert alert-light border mt-4 mb-0">
+                    <small class="text-muted">
+                      Si creés que es un error, contactá al administrador y compartí la URL.
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center text-muted small mt-3">
+                <i class="far fa-clock"></i> {{ now|default:None }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {% include "partials/footer.html" ignore missing %}
+    </div>
+  {% endblock maincomponent %}
+
+{% endblock main %}

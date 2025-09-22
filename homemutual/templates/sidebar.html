@@ -2,67 +2,80 @@
 	<nav class="sb-sidenav accordion sb-sidenav-blue" id="sidenavAccordion">
 		<div class="sb-sidenav-menu">
 			<div class="nav">
-				<div class="sb-sidenav-menu-heading">Core</div>
-				
+
 				<a class="nav-link" href="{% url 'home' %}">
 					<div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
 					Panel
 				</a>
-				
-				<div class="sb-sidenav-menu-heading">Inicio</div>
-				
-				<!-- Archivos Start -->
-				<div class="sb-sidenav-menu-heading">Archivos</div>
-				<a class="nav-link" href="{% url 'socio_list' %}">
-					<div class="sb-nav-link-icon"><i class="fas fa-id-card"></i></div>
-					Socios
-				</a>
-				<a class="nav-link" href="{% url 'sucursal_list' %}">
-					<div class="sb-nav-link-icon"><i class="fas fa-map-marker-alt"></i></div>
-					Sucursales
-				</a>
-				<a class="nav-link" href="{% url 'ver_saldo' request.user.socio.cuenta_socio %}">
-					<div class="sb-nav-link-icon"><i class="fas fa-university"></i></div>
-					Caja Ahorro
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-money-check-alt"></i></div>
-					Tranferencias				
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-money-check-alt"></i></div>
-					Tranferencias
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-piggy-bank"></i></div>
-					Ahorro a Termino
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-hand-holding-usd"></i></div>
-					Prestamos
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
-					Valores
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-user-friends"></i></div>
-					Cuotas Social
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-receipt"></i></div>
-					Carga de Impuestos
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-home"></i></div>
-					Credito Viviendas
-				</a>
-				<a class="nav-link" href="#">
-					<div class="sb-nav-link-icon"><i class="fas fa-concierge-bell"></i></div>
-					Servicios
-				</a>
-				<!-- Archivos End -->
-				
-				
+
+				{# ======================== BLOQUE STAFF ======================== #}
+				{% if request.user.is_authenticated and request.user.is_staff %}
+					<div class="sb-sidenav-menu-heading">Archivos</div>
+					<a class="nav-link" href="{% url 'cuenta_mutual_list' %}">
+						<div class="sb-nav-link-icon"><i class="fas fa-id-card"></i></div>
+						Cuentas
+					</a>
+					<a class="nav-link" href="{% url 'sucursal_list' %}">
+						<div class="sb-nav-link-icon"><i class="fas fa-map-marker-alt"></i></div>
+						Sucursales
+					</a>
+				{% endif %}
+
+				{# ======================== BLOQUE SOCIO (NO STAFF) ======================== #}
+				{% if request.user.is_authenticated and not request.user.is_staff %}
+					<div class="sb-sidenav-menu-heading">Operaciones</div>
+
+					{# Si tenés id_socio disponible, podés mostrar Caja de Ahorro (mantengo tu condición): #}
+					{% if id_socio %}
+						{# 
+						<a class="nav-link" href="{% url 'ver_saldo' request.user.socio.id_socio %}">
+							<div class="sb-nav-link-icon"><i class="fas fa-university"></i></div>
+							Caja Ahorro
+						</a>
+						#}
+					{% endif %}
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-money-check-alt"></i></div>
+						Transferencias
+					</a>
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-piggy-bank"></i></div>
+						Ahorro a Término
+					</a>
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-hand-holding-usd"></i></div>
+						Préstamos
+					</a>
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>
+						Valores
+					</a>
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-user-friends"></i></div>
+						Cuota Social
+					</a>
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-receipt"></i></div>
+						Carga de Impuestos
+					</a>
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-home"></i></div>
+						Crédito Viviendas
+					</a>
+
+					<a class="nav-link" href="#">
+						<div class="sb-nav-link-icon"><i class="fas fa-concierge-bell"></i></div>
+						Servicios
+					</a>
+				{% endif %}
+
 			</div>
 		</div>
 	</nav>

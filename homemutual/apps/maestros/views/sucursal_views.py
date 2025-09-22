@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from ..views.cruds_views_generics import *
 from ..models.sucursal_models import Sucursal
 from ..forms.sucursal_forms import SucursalForm
+from apps.core.mixins import StaffRequiredMixin
 
 
 class ConfigViews():
@@ -79,7 +80,7 @@ class DataViewList():
 
 
 # SucursalListView - Inicio
-class SucursalListView(MaestroListView):
+class SucursalListView(StaffRequiredMixin, MaestroListView):
 	model = ConfigViews.model
 	template_name = ConfigViews.template_list
 	context_object_name = ConfigViews.context_object_name
@@ -100,7 +101,7 @@ class SucursalListView(MaestroListView):
 
 
 # SucursalCreateView - Inicio
-class SucursalCreateView(MaestroCreateView):
+class SucursalCreateView(StaffRequiredMixin, MaestroCreateView):
 	model = ConfigViews.model
 	list_view_name = ConfigViews.list_view_name
 	form_class = ConfigViews.form_class
@@ -118,7 +119,7 @@ class SucursalCreateView(MaestroCreateView):
 
 
 # SucursalUpdateView
-class SucursalUpdateView(MaestroUpdateView):
+class SucursalUpdateView(StaffRequiredMixin, MaestroUpdateView):
 	model = ConfigViews.model
 	list_view_name = ConfigViews.list_view_name
 	form_class = ConfigViews.form_class
@@ -135,7 +136,7 @@ class SucursalUpdateView(MaestroUpdateView):
 
 
 # SucursalDeleteView
-class SucursalDeleteView (MaestroDeleteView):
+class SucursalDeleteView (StaffRequiredMixin, MaestroDeleteView):
 	model = ConfigViews.model
 	list_view_name = ConfigViews.list_view_name
 	template_name = ConfigViews.template_delete

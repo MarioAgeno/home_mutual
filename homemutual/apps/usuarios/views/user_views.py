@@ -19,7 +19,7 @@ from apps.usuarios.models import User
 
 
 #-- Indicar las aplicaciones del proyecto para poder filtrar los modelos de las mismas.
-project_app_labels = ['usuarios', 'maestros', 'ventas']
+project_app_labels = ['usuarios', 'maestros']
 
 
 #-- Vista Login. 
@@ -87,7 +87,7 @@ class CustomLogoutView(GenericLogoutView):
 			request.session.pop('last_name', None)
 			request.session.pop('is_superuser', None)
 			request.session.pop('is_staff', None)
-			request.session.pop('sucursal', None)
+			#request.session.pop('sucursal', None)
 		 
 		#-- Llama al método original para cerrar la sesión.
 		return super().dispatch(request, *args, **kwargs)

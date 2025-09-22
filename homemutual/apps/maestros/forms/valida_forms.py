@@ -5,8 +5,7 @@ from datetime import time
 
 
 from .crud_forms_generics import CrudGenericForm
-from ..models.valida_models import Valida
-from ..models.cliente_models import Cliente
+from models.valida_models import Valida
 from diseno_base.diseno_bootstrap import (
 	formclasstext, formclassselect, formclassdate)
 

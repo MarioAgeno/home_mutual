@@ -9,11 +9,6 @@ class User(AbstractUser):
 	email = models.EmailField("Correo electrónico")
 	telefono = models.CharField("Teléfono", max_length=15,
 							 null=True, blank=True)
-	id_sucursal = models.ForeignKey('maestros.Sucursal', 
-								  on_delete=models.PROTECT,
-								  null=True, blank=True,
-								  verbose_name="Sucursal")
-
 
 # -- Al crear un nuevo usuario este quede activo por defecto.
 @receiver(post_save, sender=User)

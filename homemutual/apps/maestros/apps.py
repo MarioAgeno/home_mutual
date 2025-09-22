@@ -7,5 +7,5 @@ class MaestrosConfig(AppConfig):
 
     def ready(self):
         import apps.maestros.models.base_gen_models
-        import apps.maestros.models.socio_models
+        import apps.maestros.models.cuenta_mutual_models
         import apps.maestros.models.sucursal_models

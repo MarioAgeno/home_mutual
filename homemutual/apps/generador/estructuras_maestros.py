@@ -43,4 +43,24 @@ estructura_campos = {
 		}
 	},
 
+	'cuenta_mutual': {
+		'Información Cuenta Mutual': {
+			'fila_1': [
+				{'field_name': 'estatus_cuenta_mutual', 'columna': 2, 'design': None},
+				{'field_name': 'id_sucursal', 'columna': 2, 'design': None},
+				{'field_name': 'id_socio', 'columna': 2, 'design': None},
+				{'field_name': 'cuenta', 'columna': 2, 'design': None},
+				{'field_name': 'documento', 'columna': 2, 'design': None},
+			],
+			'fila_2': [
+				{'field_name': 'id_sg_account', 'columna': 4, 'design': None},
+				{'field_name': 'cvu', 'columna': 4, 'design': None},
+				{'field_name': 'alias', 'columna': 4, 'design': None},
+			],
+			'fila_3': [
+				{'field_name': 'id_user', 'columna': 4, 'design': None},
+			],
+		}
+	},
+
 }

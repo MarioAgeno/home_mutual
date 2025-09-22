@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models.socio_models import Socio
+from .models.cuenta_mutual_models import CuentaMutual
 from .models.sucursal_models import Sucursal
 
 # Registramos los modelos independientes
-admin.site.register(Socio)
+admin.site.register(CuentaMutual)
 admin.site.register(Sucursal)
