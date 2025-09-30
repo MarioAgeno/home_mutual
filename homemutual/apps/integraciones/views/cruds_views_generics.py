@@ -198,12 +198,14 @@ class MaestroUpdateView(PermissionRequiredMixin, UpdateView):
 		return kwargs
 	
 	def form_valid(self, form):
+		#-- Accede al usuario evaluado.
 		user = self.request.user
-		# NO tocar id_user en ediciones de CuentaMutual u otros modelos maestros
-		if hasattr(form.instance, 'usuario'):
-			form.instance.usuario = user.username  # auditoría liviana
+		
+		#-- Asigna el usuario directamente en el modelo.
+		form.instance.id_user = user
+		form.instance.usuario = user.username
+		
 		return super().form_valid(form)
-
 	
 	def form_invalid(self, form):
 		"""

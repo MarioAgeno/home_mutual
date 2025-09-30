@@ -1,9 +1,36 @@
 # homemutual\apps\maestros\views\cuenta_mutual_views.py
-from django.urls import reverse_lazy
+from django.contrib import messages
+from django.urls import reverse_lazy, reverse
+from django.shortcuts import redirect, get_object_or_404
+from django.views import View
 from .cruds_views_generics import *
 from ..models.cuenta_mutual_models import CuentaMutual
 from ..forms.cuenta_mutual_forms import CuentaMutualForm
 from apps.core.mixins import StaffRequiredMixin
+from apps.integraciones.services.cuenta_mutual_service import crear_o_sincronizar_en_sg
+from apps.integraciones.services.sg_client import SGConnectorError
+from apps.integraciones.models.sg_catalogo_models import (
+    SgEntidadTipoDocumento, SgTipoPersona, SgTipoCuenta
+)
+
+
+def _coerce_catalog_pk(model, label_field, raw):
+    """
+    Si 'raw' ya es un PK (GUID/UUID) lo deja; si viene TEXTO (p.ej. 'DNI'),
+    busca por el campo de etiqueta y devuelve el PK. Si no encuentra, devuelve raw.
+    """
+    if not raw:
+        return raw
+    s = str(raw).strip()
+    # heurística básica de GUID
+    if '-' in s and len(s) >= 32:
+        return s
+    try:
+        obj = model.objects.get(**{f"{label_field}__iexact": s})
+        return str(obj.pk)
+    except model.DoesNotExist:
+	
+        return raw
 
 class ConfigViews():
 	# Modelo
@@ -108,20 +135,41 @@ class CuentaMutualCreateView(StaffRequiredMixin, MaestroCreateView):
 	form_class = ConfigViews.form_class
 	template_name = ConfigViews.template_form
 	success_url = ConfigViews.success_url
-	
 	#-- Indicar el permiso que requiere para ejecutar la acción.
 	permission_required = ConfigViews.permission_add
 	
-	# extra_context = {
-	# 	"accion": f"Crear {ConfigViews.model._meta.verbose_name}",
-	# 	"list_view_name" : ConfigViews.list_view_name
-	# }
-	
-	#def get_initial(self):
-	#	initial = super().get_initial()
-	#	#-- Asignar la sucursal del usuario autenticado como valor inicial.
-	#	initial['id_sucursal'] = self.request.user.id_sucursal
-	#	return initial
+	def form_valid(self, form):
+		resp = super().form_valid(form)  # crea el registro local
+		cuenta = self.object
+        # si querés crear en SG automáticamente al crear:
+		try:
+			crear_o_sincronizar_en_sg(cuenta)
+			messages.success(self.request, f"Creada en SG. CVU: {cuenta.cvu or '-'} | Alias: {cuenta.alias or '-'}")
+		except SGConnectorError as e:
+			messages.error(self.request, f"SG: {e}")
+		except Exception as e:
+			messages.error(self.request, f"Error al crear en SG: {e}")
+		return redirect(self.get_success_url())
+
+	def get_success_url(self):
+		return reverse('cuenta_mutual_update', kwargs={'pk': self.object.pk})
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		if self.request.method in ("POST", "PUT", "PATCH"):
+			data = self.request.POST.copy()
+            # convertir los 3 selects a PK
+			data["id_entidad_tipo_documento"] = _coerce_catalog_pk(
+                SgEntidadTipoDocumento, "nombre", data.get("id_entidad_tipo_documento")
+            )
+			data["id_tipo_persona"] = _coerce_catalog_pk(
+                SgTipoPersona, "tipo_persona", data.get("id_tipo_persona")
+            )
+			data["id_tipo_cuenta"] = _coerce_catalog_pk(
+                SgTipoCuenta, "tipo_cuenta", data.get("id_tipo_cuenta")
+            )
+			kwargs["data"] = data
+		return kwargs
 
 # CuentaMutualUpdateView
 class CuentaMutualUpdateView(StaffRequiredMixin, MaestroUpdateView):
@@ -133,22 +181,25 @@ class CuentaMutualUpdateView(StaffRequiredMixin, MaestroUpdateView):
 	
 	#-- Indicar el permiso que requiere para ejecutar la acción.
 	permission_required = ConfigViews.permission_change
-	
-	
-	# def get_context_data(self, **kwargs):
-	# 	#-- Llamar al contexto base de la clase genérica.
-	# 	context = super().get_context_data(**kwargs)
-	# 	
-	# 	# Obtener el objeto que se está editando
-	# 	registro = self.get_object()
-	# 	
-	# 	#-- Actualizar el contexto con el ID.
-	# 	context.update({
-	# 		"accion": f"Editar {ConfigViews.model._meta.verbose_name} - {registro.pk}",
-	# 		"list_view_name" : ConfigViews.list_view_name
-	# 	})
-	# 	
-	# 	return context
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		if self.request.method in ("POST", "PUT", "PATCH"):
+			data = self.request.POST.copy()
+			data["id_entidad_tipo_documento"] = _coerce_catalog_pk(
+                SgEntidadTipoDocumento, "nombre", data.get("id_entidad_tipo_documento")
+            )
+			data["id_tipo_persona"] = _coerce_catalog_pk(
+                SgTipoPersona, "tipo_persona", data.get("id_tipo_persona")
+            )
+			data["id_tipo_cuenta"] = _coerce_catalog_pk(
+                SgTipoCuenta, "tipo_cuenta", data.get("id_tipo_cuenta")
+            )
+			kwargs["data"] = data
+		return kwargs
+
+	def get_success_url(self):
+		return reverse('cuenta_mutual_update', kwargs={'pk': self.object.pk})
 
 
 # CuentaMutualDeleteView
@@ -166,3 +217,17 @@ class CuentaMutualDeleteView (StaffRequiredMixin, MaestroDeleteView):
 	# 	"list_view_name" : ConfigViews.list_view_name,
 	# 	"mensaje": "Estás seguro de eliminar el Registro"
 	# }
+
+class CuentaMutualCrearEnSGView(View):
+    def post(self, request, pk):
+        cuenta = get_object_or_404(CuentaMutual, pk=pk)
+        try:
+            crear_o_sincronizar_en_sg(cuenta)
+            messages.success(request, f"Creada/sincronizada en SG. CVU: {cuenta.cvu or '-'} | Alias: {cuenta.alias or '-'}")
+        except SGConnectorError as e:
+            messages.error(request, f"SG: {e}")
+        except Exception as e:
+            messages.error(request, f"Error al crear en SG: {e}")
+        # 🔁 volver a editar para ver los campos actualizados en el form
+        return redirect(reverse('cuenta_mutual_update', kwargs={'pk': pk}))
+

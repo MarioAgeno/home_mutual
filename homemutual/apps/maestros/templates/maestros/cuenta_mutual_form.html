@@ -87,21 +87,28 @@
 												</div>										
 												<div class="row">
 													
-													<div class="col-md-4">
+													<div class="col-md-3">
 														<label class="form-label text-primary mb-0">
-															{{ form.id_sg_account.label }}
+															{{ form.id_sg_usuario.label }}
 														</label>
-														{{ form.id_sg_account }}
+														{{ form.id_sg_usuario }}
 													</div>
 													
-													<div class="col-md-4">
+													<div class="col-md-3">
+														<label class="form-label text-primary mb-0">
+															{{ form.id_sg_cuenta.label }}
+														</label>
+														{{ form.id_sg_cuenta }}
+													</div>
+													
+													<div class="col-md-3">
 														<label class="form-label text-primary mb-0">
 															{{ form.cvu.label }}
 														</label>
 														{{ form.cvu }}
 													</div>
 													
-													<div class="col-md-4">
+													<div class="col-md-3">
 														<label class="form-label text-primary mb-0">
 															{{ form.alias.label }}
 														</label>
@@ -116,13 +123,88 @@
 														</label>
 														{{ form.id_user }}
 													</div>
+												</div>										
+												<div class="row">
+													
+													<div class="col-md-4">
+														<label class="form-label text-primary mb-0">
+															{{ form.razon_social.label }}
+														</label>
+														{{ form.razon_social }}
+													</div>
+													
+													<div class="col-md-2">
+														<label class="form-label text-primary mb-0">
+															{{ form.cuit.label }}
+														</label>
+														{{ form.cuit }}
+													</div>
+													
+													<div class="col-md-2">
+														<label class="form-label text-primary mb-0">
+															{{ form.sexo.label }}
+														</label>
+														{{ form.sexo }}
+													</div>
+													
+													<div class="col-md-2">
+														<label class="form-label text-primary mb-0">
+															{{ form.fecha_nacimiento.label }}
+														</label>
+														{{ form.fecha_nacimiento }}
+													</div>
+												</div>										
+												<div class="row">
+													
+													<div class="col-md-2">
+														<label class="form-label text-primary mb-0">
+															{{ form.caracteristica_pais_telefono.label }}
+														</label>
+														{{ form.caracteristica_pais_telefono }}
+													</div>
+													
+													<div class="col-md-2">
+														<label class="form-label text-primary mb-0">
+															{{ form.codigo_area_telefono.label }}
+														</label>
+														{{ form.codigo_area_telefono }}
+													</div>
+													
+													<div class="col-md-2">
+														<label class="form-label text-primary mb-0">
+															{{ form.numero_telefono.label }}
+														</label>
+														{{ form.numero_telefono }}
+													</div>
+												</div>										
+												<div class="row">
+													
+													<div class="col-md-4">
+														<label class="form-label text-primary mb-0">
+															{{ form.id_entidad_tipo_documento.label }}
+														</label>
+														{{ form.id_entidad_tipo_documento }}
+													</div>
+													
+													<div class="col-md-4">
+														<label class="form-label text-primary mb-0">
+															{{ form.id_tipo_persona.label }}
+														</label>
+														{{ form.id_tipo_persona }}
+													</div>
+													
+													<div class="col-md-4">
+														<label class="form-label text-primary mb-0">
+															{{ form.id_tipo_cuenta.label }}
+														</label>
+														{{ form.id_tipo_cuenta }}
+													</div>
 												</div>
 											</div>
 										</div>
-									</div>
-								
+									</div>								
 								</div>
-								
+
 								<div class="container mt-3">
 									<button class="btn btn-primary" type="submit" id="guardarBtn">
 										Guardar
@@ -130,7 +212,17 @@
 									<a class="btn btn-secondary" href="{% url list_view_name %}">
 										Cancelar
 									</a>
+
+									{% if form.instance.pk and not form.instance.id_sg_usuario %}
+									<button class="btn btn-warning ms-2"
+											type="submit"
+											formmethod="post"
+											formaction="{% url 'cuentamutual_crear_en_sg' form.instance.pk %}">
+										Crear en SG
+									</button>
+									{% endif %}
 								</div>
+
 							</form>
 						</div>
 					</div>

@@ -4,7 +4,6 @@ from django.urls import path
 #-- Tablas
 from .views.cuenta_mutual_views import *
 from .views.sucursal_views import *
-from .views.cuenta_mutual_views import CuentaMutualCrearEnSGView
 
 urlpatterns = [
 	#-- Tablas:
@@ -13,12 +12,10 @@ urlpatterns = [
 	path('cuentamutual/nueva/', CuentaMutualCreateView.as_view(), name='cuenta_mutual_create'),
 	path('cuentamutual/<int:pk>/editar/', CuentaMutualUpdateView.as_view(), name='cuenta_mutual_update'),
 	path('cuentamutual/<int:pk>/eliminar/', CuentaMutualDeleteView.as_view(), name='cuenta_mutual_delete'),
-    path('cuentamutual/<int:pk>/crear-en-sg/', CuentaMutualCrearEnSGView.as_view(), name='cuentamutual_crear_en_sg'),
 	
 	#-- Sucursal.
 	path('sucursal/', SucursalListView.as_view(), name='sucursal_list'),
 	path('sucursal/nueva/', SucursalCreateView.as_view(), name='sucursal_create'),
 	path('sucursal/<int:pk>/editar/', SucursalUpdateView.as_view(), name='sucursal_update'),
 	path('sucursal/<int:pk>/eliminar/', SucursalDeleteView.as_view(), name='sucursal_delete'),
-
 ]
