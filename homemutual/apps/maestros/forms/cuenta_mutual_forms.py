@@ -1,3 +1,4 @@
+import re
 from django import forms
 from .crud_forms_generics import CrudGenericForm
 from ..models.cuenta_mutual_models import CuentaMutual
@@ -7,6 +8,7 @@ from apps.integraciones.models.sg_catalogo_models import (
 )
 from apps.usuarios.models import User
 from django.db.models import Q
+
 
 class CuentaMutualForm(CrudGenericForm):
     id_entidad_tipo_documento = forms.ModelChoiceField(
@@ -64,3 +66,10 @@ class CuentaMutualForm(CrudGenericForm):
         self.fields["id_entidad_tipo_documento"].label_from_instance = lambda o: o.nombre
         self.fields["id_tipo_persona"].label_from_instance           = lambda o: o.tipo_persona
         self.fields["id_tipo_cuenta"].label_from_instance            = lambda o: o.tipo_cuenta
+
+    def clean_documento(self):
+        doc = self.cleaned_data.get("documento", "")
+        d = re.sub(r"\D+", "", str(doc or ""))
+        if d:
+            d = d.zfill(8)  # lo mismo que exige SG
+        return d

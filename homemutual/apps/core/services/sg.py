@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional, Tuple
 import requests
+import re
 from django.conf import settings
 from datetime import date, datetime
 
@@ -10,6 +11,28 @@ log = logging.getLogger(__name__)
 
 class SGError(Exception):
     pass
+
+def _digits(s) -> str:
+    return re.sub(r"\D+", "", str(s or ""))
+
+def _dni8(s) -> str:
+    d = _digits(s)
+    # SG exige exactamente 8 dígitos; si tiene menos, completar con ceros a la izquierda
+    return d.zfill(8) if d else d
+
+def _iso(dt):
+    if not dt:
+        return None
+    if isinstance(dt, (date, datetime)):
+        return dt.isoformat()
+    try:
+        d, m, y = str(dt).split("/")
+        return f"{int(y):04d}-{int(m):02d}-{int(d):02d}"
+    except Exception:
+        return str(dt)
+
+def _clean(d: dict) -> dict:
+    return {k: v for k, v in d.items() if v not in (None, "", [], {})}
 
 class SGClient:
     def __init__(
@@ -44,7 +67,7 @@ class SGClient:
             raise SGError(f"Error SG GET {r.status_code}")
         return r.json()
 
-    def _post(self, path: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _post(self, path: str, payload: dict) -> dict:
         url = f"{self.base_url}{path}"
         try:
             r = requests.post(url, headers=self._headers(), json=payload, timeout=self.timeout)
@@ -53,8 +76,8 @@ class SGClient:
             raise SGError("No se pudo conectar con el conector SG.") from ex
 
         if not r.ok:
-            log.error("SG POST %s -> %s %s", url, r.status_code, r.text[:400])
-            raise SGError(f"Error SG POST {r.status_code}")
+            # >>> incluye el cuerpo del error para ver 'validation errors' en los mensajes
+            raise SGError(f"Error SG POST {r.status_code}: {r.text}")
         return r.json()
 
     def usuario_by_cuit(self, cuit: str) -> dict:
@@ -212,7 +235,6 @@ def _clean(d: dict) -> dict:
     return {k: v for k, v in d.items() if v not in (None, "", [], {})}
 
 def build_sg_payload(obj) -> dict:
-    # Mapear sexo a 'M'/'F'
     sexo = (getattr(obj, "sexo", "") or "").strip().upper()
     if sexo.startswith("M"):
         sexo = "M"
@@ -227,36 +249,40 @@ def build_sg_payload(obj) -> dict:
         "razonSocial": getattr(obj, "razon_social", None) or None,
         "sexo": sexo,
 
-        # OJO: usar *_id (FK cruda), no la instancia:
         "idEntidadTipoDocumento": getattr(obj, "id_entidad_tipo_documento_id", None),
-        "numeroDocumento": getattr(obj, "documento", None),
+        "numeroDocumento": _dni8(getattr(obj, "documento", None)),  # <--- AQUÍ EL CAMBIO
 
         "fechaNacimiento": _iso(getattr(obj, "fecha_nacimiento", None)),
-        "cuit": getattr(obj, "cuit", None),
+        "cuit": _digits(getattr(obj, "cuit", None)) or None,  # opcional: solo dígitos
 
         "email": getattr(obj.id_user, "email", None) or None,
         "caracteristicaPaisTelefono": getattr(obj, "caracteristica_pais_telefono", None) or None,
         "codigoAreaTelefono": getattr(obj, "codigo_area_telefono", None) or None,
         "numeroTelefono": getattr(obj, "numero_telefono", None) or None,
 
-        "idTipoPersona": getattr(obj, "id_tipo_persona_id", None),   # FK -> *_id
+        "idTipoPersona": getattr(obj, "id_tipo_persona_id", None),
         "numeroCuentaEntidad": str(getattr(obj, "cuenta", "") or "").strip(),
-        "idTipoCuenta": getattr(obj, "id_tipo_cuenta_id", None),     # FK -> *_id
+        "idTipoCuenta": getattr(obj, "id_tipo_cuenta_id", None),
     }
     return _clean(payload)
 
+
 def create_sg_account_from_obj(obj):
     client = SGClient()
-    payload = build_sg_payload(obj)
-    c = client.crear_usuario(payload)  # POST /sg/usuarios
+    try:
+        payload = build_sg_payload(obj)
+        c = client.crear_usuario(payload)  # POST /sg/usuarios
+    except SGError as ex:
+        # devolvemos motivo legible a la View (que lo muestra con messages.warning)
+        return (None, None, None, None, None, f"SG rechazó el alta: {ex}")
 
-    # Tu wrapper devuelve: { idUsuario, cuentas: [ {cvu, alias, estado, nroCuentaEntidad, ...} ] }
     idu = c.get("idUsuario")
     cuentas = c.get("cuentas") or []
-    # elegir por número de cuenta (tolerante con ceros a la izquierda)
+
     def _norm(v): 
         s = str(v or "")
         return s.lstrip("0") or "0"
+
     nce = _norm(payload.get("numeroCuentaEntidad"))
     match = next((x for x in cuentas if _norm(x.get("nroCuentaEntidad") or x.get("numeroCuentaEntidad")) == nce), None)
     if not match and cuentas:
@@ -265,5 +291,6 @@ def create_sg_account_from_obj(obj):
     if not (idu and match):
         return (idu, None, None, None, None, "POST /sg/usuarios sin datos suficientes")
 
-    idcta = match.get("idCuenta") or match.get("id")  # si tu wrapper algún día lo agrega
+    idcta = match.get("idCuenta") or match.get("id")
     return (idu, idcta, match.get("cvu"), match.get("alias"), match.get("estado"), None)
+
