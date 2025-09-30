@@ -9,9 +9,7 @@ from ..forms.cuenta_mutual_forms import CuentaMutualForm
 from apps.core.mixins import StaffRequiredMixin
 from apps.integraciones.services.cuenta_mutual_service import crear_o_sincronizar_en_sg
 from apps.integraciones.services.sg_client import SGConnectorError
-from apps.integraciones.models.sg_catalogo_models import (
-    SgEntidadTipoDocumento, SgTipoPersona, SgTipoCuenta
-)
+from apps.core.services.sg import (resolve_sg_for_cuenta, create_sg_account_from_obj, build_sg_payload)
 
 
 def _coerce_catalog_pk(model, label_field, raw):
@@ -139,37 +137,60 @@ class CuentaMutualCreateView(StaffRequiredMixin, MaestroCreateView):
 	permission_required = ConfigViews.permission_add
 	
 	def form_valid(self, form):
-		resp = super().form_valid(form)  # crea el registro local
-		cuenta = self.object
-        # si querés crear en SG automáticamente al crear:
-		try:
-			crear_o_sincronizar_en_sg(cuenta)
-			messages.success(self.request, f"Creada en SG. CVU: {cuenta.cvu or '-'} | Alias: {cuenta.alias or '-'}")
-		except SGConnectorError as e:
-			messages.error(self.request, f"SG: {e}")
-		except Exception as e:
-			messages.error(self.request, f"Error al crear en SG: {e}")
-		return redirect(self.get_success_url())
+		response = super().form_valid(form)
+		obj = self.object
 
-	def get_success_url(self):
-		return reverse('cuenta_mutual_update', kwargs={'pk': self.object.pk})
+		cuit = (obj.cuit or "").strip()
+		nro  = (str(obj.cuenta or "")).strip()
+		force = bool(self.request.POST.get("crear_sg"))
 
-	def get_form_kwargs(self):
-		kwargs = super().get_form_kwargs()
-		if self.request.method in ("POST", "PUT", "PATCH"):
-			data = self.request.POST.copy()
-            # convertir los 3 selects a PK
-			data["id_entidad_tipo_documento"] = _coerce_catalog_pk(
-                SgEntidadTipoDocumento, "nombre", data.get("id_entidad_tipo_documento")
-            )
-			data["id_tipo_persona"] = _coerce_catalog_pk(
-                SgTipoPersona, "tipo_persona", data.get("id_tipo_persona")
-            )
-			data["id_tipo_cuenta"] = _coerce_catalog_pk(
-                SgTipoCuenta, "tipo_cuenta", data.get("id_tipo_cuenta")
-            )
-			kwargs["data"] = data
-		return kwargs
+		if not (cuit and nro):
+			messages.info(self.request, "Guardado local. Falta CUIT o Nº Cuenta para integrar con SG.")
+			return response
+
+		if force:
+			# ALTA DIRECTA
+			idu, idcta, cvu, alias, estado, reason = create_sg_account_from_obj(obj)
+		else:
+			# SOLO SINCRONIZAR (GET)
+			idu, cvu, alias, estado, reason = resolve_sg_for_cuenta(
+				cuit=cuit,
+				nro_cuenta_entidad=nro,
+				nombre=(getattr(obj.id_user, "first_name", "") or "N/D").strip(),
+				apellido=(getattr(obj.id_user, "last_name", "") or "N/D").strip(),
+				email=(getattr(obj.id_user, "email", "") or None),
+				telefono=str(getattr(obj, "numero_telefono", "") or "") or None,
+				force_create=False,
+			)
+			idcta = None  # en GET usualmente no viene id de cuenta
+
+		changed = False
+		if idu and not obj.id_sg_usuario:
+			obj.id_sg_usuario = idu; changed = True
+		if idcta and not obj.id_sg_cuenta:
+			obj.id_sg_cuenta = idcta; changed = True
+		if cvu and not (obj.cvu or "").strip():
+			obj.cvu = cvu; changed = True
+		if alias and not (obj.alias or "").strip():
+			obj.alias = alias; changed = True
+		if changed:
+			obj.save(update_fields=["id_sg_usuario","id_sg_cuenta","cvu","alias"])
+
+		if idu or cvu:
+			base = "Crear en SG" if force else "Integración SG"
+			extras = []
+			if idu: extras.append(f"idUsuario={idu}")
+			if idcta: extras.append(f"idCuenta={idcta}")
+			if cvu: extras.append(f"CVU={cvu}")
+			if alias: extras.append(f"Alias={alias}")
+			messages.success(self.request, f"{base} OK. " + ", ".join(extras))
+		else:
+			base = "Crear en SG" if force else "Integración SG"
+			extra = f" Motivo: {reason}." if reason else ""
+			messages.warning(self.request, f"{base} no pudo completarse.{extra}")
+
+		return response
+
 
 # CuentaMutualUpdateView
 class CuentaMutualUpdateView(StaffRequiredMixin, MaestroUpdateView):
@@ -182,25 +203,60 @@ class CuentaMutualUpdateView(StaffRequiredMixin, MaestroUpdateView):
 	#-- Indicar el permiso que requiere para ejecutar la acción.
 	permission_required = ConfigViews.permission_change
 
-	def get_form_kwargs(self):
-		kwargs = super().get_form_kwargs()
-		if self.request.method in ("POST", "PUT", "PATCH"):
-			data = self.request.POST.copy()
-			data["id_entidad_tipo_documento"] = _coerce_catalog_pk(
-                SgEntidadTipoDocumento, "nombre", data.get("id_entidad_tipo_documento")
-            )
-			data["id_tipo_persona"] = _coerce_catalog_pk(
-                SgTipoPersona, "tipo_persona", data.get("id_tipo_persona")
-            )
-			data["id_tipo_cuenta"] = _coerce_catalog_pk(
-                SgTipoCuenta, "tipo_cuenta", data.get("id_tipo_cuenta")
-            )
-			kwargs["data"] = data
-		return kwargs
+	def form_valid(self, form):
+		response = super().form_valid(form)
+		obj = self.object
 
-	def get_success_url(self):
-		return reverse('cuenta_mutual_update', kwargs={'pk': self.object.pk})
+		cuit = (obj.cuit or "").strip()
+		nro  = (str(obj.cuenta or "")).strip()
+		force = bool(self.request.POST.get("crear_sg"))
 
+		if not (cuit and nro):
+			messages.info(self.request, "Guardado local. Falta CUIT o Nº Cuenta para integrar con SG.")
+			return response
+
+		if force:
+			# ALTA DIRECTA
+			idu, idcta, cvu, alias, estado, reason = create_sg_account_from_obj(obj)
+		else:
+			# SOLO SINCRONIZAR (GET)
+			idu, cvu, alias, estado, reason = resolve_sg_for_cuenta(
+				cuit=cuit,
+				nro_cuenta_entidad=nro,
+				nombre=(getattr(obj.id_user, "first_name", "") or "N/D").strip(),
+				apellido=(getattr(obj.id_user, "last_name", "") or "N/D").strip(),
+				email=(getattr(obj.id_user, "email", "") or None),
+				telefono=str(getattr(obj, "numero_telefono", "") or "") or None,
+				force_create=False,
+			)
+			idcta = None  # en GET usualmente no viene id de cuenta
+
+		changed = False
+		if idu and not obj.id_sg_usuario:
+			obj.id_sg_usuario = idu; changed = True
+		if idcta and not obj.id_sg_cuenta:
+			obj.id_sg_cuenta = idcta; changed = True
+		if cvu and not (obj.cvu or "").strip():
+			obj.cvu = cvu; changed = True
+		if alias and not (obj.alias or "").strip():
+			obj.alias = alias; changed = True
+		if changed:
+			obj.save(update_fields=["id_sg_usuario","id_sg_cuenta","cvu","alias"])
+
+		if idu or cvu:
+			base = "Crear en SG" if force else "Integración SG"
+			extras = []
+			if idu: extras.append(f"idUsuario={idu}")
+			if idcta: extras.append(f"idCuenta={idcta}")
+			if cvu: extras.append(f"CVU={cvu}")
+			if alias: extras.append(f"Alias={alias}")
+			messages.success(self.request, f"{base} OK. " + ", ".join(extras))
+		else:
+			base = "Crear en SG" if force else "Integración SG"
+			extra = f" Motivo: {reason}." if reason else ""
+			messages.warning(self.request, f"{base} no pudo completarse.{extra}")
+
+		return response
 
 # CuentaMutualDeleteView
 class CuentaMutualDeleteView (StaffRequiredMixin, MaestroDeleteView):

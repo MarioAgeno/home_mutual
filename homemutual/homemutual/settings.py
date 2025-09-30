@@ -20,8 +20,8 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Conector SG (tu FastAPI)
-SG_CONNECTOR_BASE_URL = getenv("SG_CONNECTOR_BASE_URL", "http://127.0.0.1:8000")  # ajusta puerto
+# Conector SG
+SG_CONNECTOR_BASE_URL = getenv("SG_CONNECTOR_BASE_URL", "http://127.0.0.1:8000")
 SG_CONNECTOR_API_KEY = getenv("SG_CONNECTOR_API_KEY", "")
 SG_CONNECTOR_TIMEOUT = int(getenv("SG_CONNECTOR_TIMEOUT", "20"))
 

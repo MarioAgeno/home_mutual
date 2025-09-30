@@ -214,12 +214,13 @@
 									</a>
 
 									{% if form.instance.pk and not form.instance.id_sg_usuario %}
-									<button class="btn btn-warning ms-2"
-											type="submit"
-											formmethod="post"
-											formaction="{% url 'cuentamutual_crear_en_sg' form.instance.pk %}">
+									<button class="btn btn-warning"
+											type="submit" 
+											name="crear_sg" 
+											value="1" >
 										Crear en SG
 									</button>
+
 									{% endif %}
 								</div>
 

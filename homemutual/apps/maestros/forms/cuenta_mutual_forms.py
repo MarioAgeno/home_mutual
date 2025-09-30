@@ -46,7 +46,7 @@ class CuentaMutualForm(CrudGenericForm):
             'numero_telefono': forms.TextInput(attrs={**formclasstext}),
             'id_sg_usuario': forms.TextInput(attrs={**formclasstext}),
             'id_sg_cuenta': forms.TextInput(attrs={**formclasstext}),
-            'nro_cuenta_entidad': forms.TextInput(attrs={**formclasstext}),
+            #'nro_cuenta_entidad': forms.TextInput(attrs={**formclasstext}),
         }
 
     def __init__(self, *args, **kwargs):
