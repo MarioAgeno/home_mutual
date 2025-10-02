@@ -1,13 +1,11 @@
 import re
 from django import forms
+from django.db.models import Q
 from .crud_forms_generics import CrudGenericForm
 from ..models.cuenta_mutual_models import CuentaMutual
 from diseno_base.diseno_bootstrap import (formclasstext, formclassselect, formclassdate)
-from apps.integraciones.models.sg_catalogo_models import (
-    SgEntidadTipoDocumento, SgTipoPersona, SgTipoCuenta
-)
+from ..models.sg_catalogo_models import (SgEntidadTipoDocumento, SgTipoPersona, SgTipoCuenta)
 from apps.usuarios.models import User
-from django.db.models import Q
 
 
 class CuentaMutualForm(CrudGenericForm):
@@ -48,7 +46,6 @@ class CuentaMutualForm(CrudGenericForm):
             'numero_telefono': forms.TextInput(attrs={**formclasstext}),
             'id_sg_usuario': forms.TextInput(attrs={**formclasstext}),
             'id_sg_cuenta': forms.TextInput(attrs={**formclasstext}),
-            #'nro_cuenta_entidad': forms.TextInput(attrs={**formclasstext}),
         }
 
     def __init__(self, *args, **kwargs):

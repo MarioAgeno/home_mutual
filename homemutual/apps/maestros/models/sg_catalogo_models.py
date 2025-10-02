@@ -3,11 +3,9 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from .base_gen_models import ModeloBaseGenerico
 from entorno.constantes_base import ESTATUS_GEN
-import uuid
 
 
 class SgEntidadTipoDocumento(ModeloBaseGenerico):
-	#id_sg_entidad_tipo_documento = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  
 	id_sg_entidad_tipo_documento = models.CharField(primary_key=True, max_length=36)
 	estatus_sg_entidad_tipo_documento = models.BooleanField("Estatus", default=True,
 										   choices=ESTATUS_GEN)
@@ -24,7 +22,6 @@ class SgEntidadTipoDocumento(ModeloBaseGenerico):
 	
 
 class SgTipoPersona(ModeloBaseGenerico):
-	#id_sg_tipo_persona = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  
 	id_sg_tipo_persona = models.CharField(primary_key=True, max_length=36)
 	estatus_sg_tipo_persona = models.BooleanField("Estatus", default=True,
 										   choices=ESTATUS_GEN)
@@ -40,7 +37,6 @@ class SgTipoPersona(ModeloBaseGenerico):
 		return self.tipo_persona
 	
 class SgTipoCuenta(ModeloBaseGenerico):
-	#id_sg_tipo_cuenta = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  
 	id_sg_tipo_cuenta = models.CharField(primary_key=True, max_length=36)
 	estatus_sg_tipo_cuenta = models.BooleanField("Estatus", default=True,
 										   choices=ESTATUS_GEN)

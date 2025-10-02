@@ -5,7 +5,7 @@ from django.db.models import Q
 from apps.usuarios.models import User
 from .base_gen_models import ModeloBaseGenerico
 from .sucursal_models import Sucursal
-from apps.integraciones.models.sg_catalogo_models import SgEntidadTipoDocumento, SgTipoPersona, SgTipoCuenta
+from .sg_catalogo_models import SgEntidadTipoDocumento, SgTipoPersona, SgTipoCuenta
 from entorno.constantes_base import ESTATUS_GEN
 
 SEXO_CHOICES = (
@@ -41,21 +41,21 @@ class CuentaMutual(ModeloBaseGenerico):
 
     id_entidad_tipo_documento = models.ForeignKey(
         SgEntidadTipoDocumento,
-        to_field='id_sg_entidad_tipo_documento',   # << clave
+        to_field='id_sg_entidad_tipo_documento',
         on_delete=models.PROTECT,
         null=True, blank=True,
     )
 
     id_tipo_persona = models.ForeignKey(
         SgTipoPersona,
-        to_field='id_sg_tipo_persona',             # << clave
+        to_field='id_sg_tipo_persona', 
         on_delete=models.PROTECT,
         null=True, blank=True,
     )
 
     id_tipo_cuenta = models.ForeignKey(
         SgTipoCuenta,
-        to_field='id_sg_tipo_cuenta',              # << clave
+        to_field='id_sg_tipo_cuenta', 
         on_delete=models.PROTECT,
         null=True, blank=True,
     )

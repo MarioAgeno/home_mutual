@@ -7,8 +7,6 @@ from .cruds_views_generics import *
 from ..models.cuenta_mutual_models import CuentaMutual
 from ..forms.cuenta_mutual_forms import CuentaMutualForm
 from apps.core.mixins import StaffRequiredMixin
-from apps.integraciones.services.cuenta_mutual_service import crear_o_sincronizar_en_sg
-from apps.integraciones.services.sg_client import SGConnectorError
 from apps.core.services.sg import (resolve_sg_for_cuenta, create_sg_account_from_obj, build_sg_payload)
 
 
