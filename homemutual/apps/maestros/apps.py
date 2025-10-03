@@ -9,3 +9,4 @@ class MaestrosConfig(AppConfig):
         import apps.maestros.models.base_gen_models
         import apps.maestros.models.cuenta_mutual_models
         import apps.maestros.models.sucursal_models
+        import apps.maestros.models.sg_catalogo_models

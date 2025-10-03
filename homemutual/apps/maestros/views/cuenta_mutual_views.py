@@ -1,15 +1,16 @@
 # homemutual\apps\maestros\views\cuenta_mutual_views.py
 from django.contrib import messages
-from django.urls import reverse_lazy, reverse
-from django.shortcuts import redirect, get_object_or_404
+from django.urls import reverse_lazy
+#from django.urls import reverse
+#from django.shortcuts import redirect, get_object_or_404
 from django.views import View
 from .cruds_views_generics import *
 from ..models.cuenta_mutual_models import CuentaMutual
 from ..forms.cuenta_mutual_forms import CuentaMutualForm
-from apps.core.mixins import StaffRequiredMixin
-from apps.core.services.sg import (resolve_sg_for_cuenta, create_sg_account_from_obj, build_sg_payload)
+from ...core.mixins import StaffRequiredMixin
+from ...core.services.sg import (resolve_sg_for_cuenta, create_sg_account_from_obj)
 
-
+'''
 def _coerce_catalog_pk(model, label_field, raw):
     """
     Si 'raw' ya es un PK (GUID/UUID) lo deja; si viene TEXTO (p.ej. 'DNI'),
@@ -27,6 +28,7 @@ def _coerce_catalog_pk(model, label_field, raw):
     except model.DoesNotExist:
 	
         return raw
+'''
 
 class ConfigViews():
 	# Modelo
@@ -271,17 +273,4 @@ class CuentaMutualDeleteView (StaffRequiredMixin, MaestroDeleteView):
 	# 	"list_view_name" : ConfigViews.list_view_name,
 	# 	"mensaje": "Estás seguro de eliminar el Registro"
 	# }
-
-class CuentaMutualCrearEnSGView(View):
-    def post(self, request, pk):
-        cuenta = get_object_or_404(CuentaMutual, pk=pk)
-        try:
-            crear_o_sincronizar_en_sg(cuenta)
-            messages.success(request, f"Creada/sincronizada en SG. CVU: {cuenta.cvu or '-'} | Alias: {cuenta.alias or '-'}")
-        except SGConnectorError as e:
-            messages.error(request, f"SG: {e}")
-        except Exception as e:
-            messages.error(request, f"Error al crear en SG: {e}")
-        # 🔁 volver a editar para ver los campos actualizados en el form
-        return redirect(reverse('cuenta_mutual_update', kwargs={'pk': pk}))
-
+	
